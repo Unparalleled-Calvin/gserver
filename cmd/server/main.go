@@ -1,7 +1,18 @@
 package main
 
-import "calvin.com/gserver/internal/server"
+import (
+	"log"
+	"os"
+
+	"github.com/Unparalleled-Calvin/gserver/internal/server"
+)
 
 func main() {
-	server.Run()
+	serverAddr := os.Getenv("GSERVER_ADDR")
+
+	if serverAddr == "" {
+		serverAddr = "localhost:8000"
+	}
+
+	log.Fatal(server.Run(serverAddr))
 }

@@ -1,11 +1,10 @@
 package server
 
 import (
-	"log"
 	"net/http"
 )
 
-func Run() {
+func Run(serverAddr string) error {
 	http.HandleFunc("/", helloHandler)
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	return http.ListenAndServe(serverAddr, nil)
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"calvin.com/gserver/internal/client"
+	"github.com/Unparalleled-Calvin/gserver/internal/client"
 )
 
 func main() {
