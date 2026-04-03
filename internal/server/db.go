@@ -2,9 +2,9 @@ package server
 
 import (
 	"context"
-	"os"
 	"sync"
 
+	"github.com/Unparalleled-Calvin/gserver/internal/settings"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -15,14 +15,10 @@ var (
 
 func GetRedisClient() *redis.Client {
 	once.Do(func() {
-		redisAddr := os.Getenv("GSERVER_REDIS_ADDR")
-		if redisAddr == "" {
-			redisAddr = "localhost:6379"
-		}
 		rdb = redis.NewClient(&redis.Options{
-			Addr:     redisAddr,
-			Password: "", // 无密码，留空字符串
-			DB:       0,  // 使用默认 DB
+			Addr:     settings.RedisAddr,
+			Password: settings.RedisPassword,
+			DB:       0, // use the default DB
 		})
 	})
 	return rdb

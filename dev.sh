@@ -6,6 +6,8 @@ BIN_DIR="$ROOT_DIR/bin"
 PID_FILE="$ROOT_DIR/.gserver.pid"
 SERVER_BIN="$BIN_DIR/server"
 CLIENT_BIN="$BIN_DIR/client"
+CONFIG_SRC="$ROOT_DIR/internal/settings/settings.ini"
+CONFIG_DST="$BIN_DIR/settings.ini"
 
 usage() {
   cat <<'EOF'
@@ -25,6 +27,8 @@ build_all() {
   go build -o "$SERVER_BIN" ./cmd/server
   echo "[build] client"
   go build -o "$CLIENT_BIN" ./cmd/client
+  echo "[copy] settings.ini"
+  cp "$CONFIG_SRC" "$CONFIG_DST"
 }
 
 is_server_running() {

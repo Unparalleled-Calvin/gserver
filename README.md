@@ -10,12 +10,10 @@ Generally, you can use `dev.sh` to launch a dump server for testing.
 ./dev.sh -b # build the server and client binary
 ./dev.sh -l # launch the server
 ./dev.sh -c # run the client
-# ./dev.sh -s # stop the server
+./dev.sh -s # stop the server
 ```
 
-The server address is set by environment variable `GSERVER_ADDR` and the default value is `localhost:8000`.
-
-The redis address is set by environment variable `GSERVER_REDIS_ADDR` and the default value is `localhost:6379`.
+The server address and redis address can be configured in `internal/settings/settings.ini`.
 
 ### Dependency
 
