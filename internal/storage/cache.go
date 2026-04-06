@@ -1,4 +1,4 @@
-package server
+package storage
 
 import (
 	"context"
@@ -9,17 +9,20 @@ import (
 )
 
 var (
-	rdb  *redis.Client
-	once sync.Once
+	rdb       *redis.Client
+	redisOnce sync.Once
 )
 
 func GetRedisClient() *redis.Client {
-	once.Do(func() {
+	redisOnce.Do(func() {
 		rdb = redis.NewClient(&redis.Options{
 			Addr:     settings.RedisAddr,
 			Password: settings.RedisPassword,
-			DB:       0, // use the default DB
+			DB:       settings.RedisDB,
 		})
+		if err := rdb.Ping(context.Background()).Err(); err != nil {
+			panic("Failed to connect to Redis: " + err.Error())
+		}
 	})
 	return rdb
 }

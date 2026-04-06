@@ -15,6 +15,12 @@ var (
 
 	RedisAddr     string
 	RedisPassword string
+	RedisDB       int
+
+	MySQLAddr     string
+	MySQLUser     string
+	MySQLPassword string
+	MySQLDB       string
 )
 
 func Load() {
@@ -25,6 +31,7 @@ func Load() {
 		log.Fatalf("Fail to load file %v: %v", configFile, err)
 	}
 	LoadServer()
+	LoadCache()
 	LoadDB()
 }
 
@@ -56,12 +63,25 @@ func LoadServer() {
 	ServerAddr = sec.Key("server_addr").MustString(":8000")
 }
 
-func LoadDB() {
-	sectionName := "db"
+func LoadCache() {
+	sectionName := "cache"
 	sec, err := Cig.GetSection(sectionName)
 	if err != nil {
 		log.Fatalf("Fail to load section %v: %v", sectionName, err)
 	}
 	RedisAddr = sec.Key("redis_addr").MustString("localhost:6379")
 	RedisPassword = sec.Key("redis_password").MustString("")
+	RedisDB = sec.Key("redis_db").MustInt(0)
+}
+
+func LoadDB() {
+	sectionName := "db"
+	sec, err := Cig.GetSection(sectionName)
+	if err != nil {
+		log.Fatalf("Fail to load section %v: %v", sectionName, err)
+	}
+	MySQLAddr = sec.Key("mysql_addr").MustString("localhost:3306")
+	MySQLUser = sec.Key("mysql_user").MustString("root")
+	MySQLPassword = sec.Key("mysql_password").MustString("")
+	MySQLDB = sec.Key("mysql_db").MustString("gserver")
 }
