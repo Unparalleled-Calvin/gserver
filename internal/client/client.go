@@ -4,10 +4,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
-func Run(url string) error {
-	resp, err := http.Get(url)
+func Run(url, form string) error {
+	var resp *http.Response
+	var err error
+	if form != "" {
+		resp, err = http.Post(url, "application/json", strings.NewReader(form))
+	} else {
+		resp, err = http.Get(url)
+	}
 	if err != nil {
 		return err
 	}
