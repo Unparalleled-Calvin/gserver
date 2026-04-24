@@ -16,9 +16,10 @@ Usage: ./dev.sh [options]
 
 Options:
   -b    Build server and client binaries
-  -l    Launch server in background
-  -s    Stop background server process
-  -k    Stop server, stop redis/mysql containers, and prune containers
+  -l    Run server in foreground (server only)
+  -L    Launch server in background and ensure redis/mysql containers
+  -k    Stop background server process
+  -K    Stop server, stop redis/mysql containers, and prune containers
   -c    Run client in foreground
 EOF
 }
@@ -31,6 +32,39 @@ build_all() {
   go build -o "$CLIENT_BIN" ./cmd/client
   echo "[copy] settings.ini"
   cp "$CONFIG_SRC" "$CONFIG_DST"
+}
+
+is_binary_stale() { # check if the binary is missing or if any source files are newer than the binary
+  local binary="$1"
+
+  [[ -x "$binary" ]] || return 0
+
+  if [[ "$ROOT_DIR/go.mod" -nt "$binary" ]]; then
+    return 0
+  fi
+
+  if [[ -f "$ROOT_DIR/go.sum" ]] && [[ "$ROOT_DIR/go.sum" -nt "$binary" ]]; then
+    return 0
+  fi
+
+  if find "$ROOT_DIR/cmd" "$ROOT_DIR/internal" -type f -name '*.go' -newer "$binary" | grep -q .; then
+    return 0
+  fi
+
+  return 1
+}
+
+ensure_build_if_needed() {
+  if [[ ! -x "$SERVER_BIN" || ! -x "$CLIENT_BIN" || ! -f "$CONFIG_DST" ]]; then
+    echo "[info] binary or config missing, building first"
+    build_all
+    return
+  fi
+
+  if is_binary_stale "$SERVER_BIN" || is_binary_stale "$CLIENT_BIN" || [[ "$CONFIG_SRC" -nt "$CONFIG_DST" ]]; then
+    echo "[info] source/config changed, rebuilding"
+    build_all
+  fi
 }
 
 is_server_running() {
@@ -74,22 +108,22 @@ ensure_required_containers() {
 }
 
 launch_server_background() {
-  ensure_required_containers
-
-  if [[ ! -x "$SERVER_BIN" ]]; then
-    echo "[info] server binary not found, building first"
-    build_all
-  fi
-
   if is_server_running; then
     echo "[skip] server already running (pid: $(cat "$PID_FILE"))"
     return
   fi
 
+  ensure_build_if_needed
+
   nohup "$SERVER_BIN" >/tmp/gserver.log 2>&1 &
   local pid=$!
   echo "$pid" >"$PID_FILE"
   echo "[ok] server started in background (pid: $pid, log: /tmp/gserver.log)"
+}
+
+launch_server_with_containers_background() {
+  ensure_required_containers
+  launch_server_background
 }
 
 stop_server_background() {
@@ -135,11 +169,20 @@ stop_all_and_prune() {
   echo "[ok] docker container prune completed"
 }
 
-run_client_foreground() {
-  if [[ ! -x "$CLIENT_BIN" ]]; then
-    echo "[info] client binary not found, building first"
-    build_all
+run_server_foreground() {
+  if is_server_running; then
+    echo "[skip] server already running in background (pid: $(cat "$PID_FILE"))"
+    return
   fi
+
+  ensure_build_if_needed
+
+  echo "[run] starting server in foreground (press Ctrl+C to stop)"
+  "$SERVER_BIN"
+}
+
+run_client_foreground() {
+  ensure_build_if_needed
 
   "$CLIENT_BIN"
 }
@@ -149,12 +192,13 @@ if [[ $# -eq 0 ]]; then
   exit 1
 fi
 
-while getopts ":blsck" opt; do
+while getopts ":blLkKc" opt; do
   case "$opt" in
     b) build_all ;;
-    l) launch_server_background ;;
-    s) stop_server_background ;;
-    k) stop_all_and_prune ;;
+    l) run_server_foreground ;;
+    L) launch_server_with_containers_background ;;
+    k) stop_server_background ;;
+    K) stop_all_and_prune ;;
     c) run_client_foreground ;;
     *)
       usage
