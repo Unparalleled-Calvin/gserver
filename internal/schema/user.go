@@ -1,7 +1,13 @@
 package schema
 
-type UserAuth struct {
+type UserAuth struct { // for user authentication
+	ID    uint64
+	Token string
+}
+
+type UserRegister struct { // for user registration
 	ID       uint64
+	UserName string
 	Password string
 }
 
@@ -10,12 +16,6 @@ type UserLevel struct {
 	Exp   uint64
 }
 
-type Equipment interface {
-	GetID() uint64
-}
-
 type UserInfo struct {
-	UserAuth
-	UserLevel
-	EquipmentList []Equipment
+	UserRegister
 }

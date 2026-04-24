@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Unparalleled-Calvin/gserver/internal/schema"
 	"github.com/Unparalleled-Calvin/gserver/internal/settings"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -23,4 +24,10 @@ func GetDB() *sql.DB {
 		}
 	})
 	return db
+}
+
+func InsertUser(userRegister schema.UserRegister) error {
+	sql := "INSERT INTO user (id, username, password_hash) VALUES (?, ?, ?)"
+	_, err := GetDB().Exec(sql, userRegister.ID, userRegister.UserName, userRegister.Password)
+	return err
 }

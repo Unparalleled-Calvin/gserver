@@ -24,3 +24,19 @@ The server address and other settings can be configured in `internal/settings/se
 - Go 1.26.1 or later
 - Redis 7.0.12
 - MySQL 8.0
+
+### Brief Introduction
+
+The project follows a simple layered structure:
+
+- `cmd`: executable entrypoints (`server` and `client`).
+- `internal/server`: HTTP routing and handlers.
+- `internal/service`: business logic.
+- `internal/storage`: MySQL/Redis access.
+- `internal/schema`: shared request/domain structs.
+- `internal/settings`: configuration loading.
+
+Main call chain:
+
+`cmd/server -> server(handler) -> service -> storage`
+

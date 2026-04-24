@@ -7,7 +7,11 @@ import (
 )
 
 func Run(serverAddr string) error {
-	http.HandleFunc("/", helloHandler)
+
+	// register handlers
+	http.HandleFunc("/hello", helloHandler)
+	http.HandleFunc("/register", registerHandler)
+
 	_, _ = storage.GetDB(), storage.GetRedisClient()
 	return http.ListenAndServe(serverAddr, nil)
 }
